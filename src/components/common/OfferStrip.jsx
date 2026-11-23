@@ -5,8 +5,10 @@ import { Link } from '@/i18n/routing.js';
 import { X, Sparkles, ArrowRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '@/services/axiosInstance.js';
+import { useLocale } from 'next-intl';
 
 export default function OfferStrip() {
+  const locale = useLocale();
   const [isDismissed, setIsDismissed] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -21,7 +23,11 @@ export default function OfferStrip() {
 
   const strip = data?.content;
   const isCmsActive = data?.isActive !== false && strip?.isActive !== false;
-  const text = strip?.text?.trim();
+  const rawText = (locale === 'hi' ? strip?.text_hi : locale === 'mr' ? strip?.text_mr : null) || strip?.text;
+  const text = rawText?.trim();
+  const badge = (locale === 'hi' ? strip?.badge_hi : locale === 'mr' ? strip?.badge_mr : null) || strip?.badge;
+  const linkText = (locale === 'hi' ? strip?.linkLabel_hi : locale === 'mr' ? strip?.linkLabel_mr : null) || strip?.linkLabel || strip?.linkText;
+  const linkUrl = strip?.linkTarget || strip?.linkUrl;
 
   useEffect(() => {
     setMounted(true);
@@ -63,17 +69,15 @@ export default function OfferStrip() {
   };
 
   const themeClass = getThemeClass(strip.bgStyle || strip.theme);
-  const linkText = strip.linkLabel || strip.linkText;
-  const linkUrl = strip.linkTarget || strip.linkUrl;
 
   return (
     <div className={`relative z-40 px-4 py-2 text-xs sm:text-sm transition-colors shadow-2xs ${themeClass}`}>
       <div className="w-full max-w-[1550px] mx-auto flex items-center justify-center relative pr-7 sm:pr-8">
         <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-center leading-snug">
-          {strip.badge && (
+          {badge && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-black/15 dark:bg-white/20">
               <Sparkles className="w-3 h-3" />
-              {strip.badge}
+              {badge}
             </span>
           )}
           <span className="font-semibold">{text}</span>

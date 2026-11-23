@@ -6,8 +6,10 @@ import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '@/services/axiosInstance.js';
 import { useSettingsStore } from '@/store/settingsStore.js';
 import { Link } from '@/i18n/routing.js';
+import { useLocale } from 'next-intl';
 
 export default function SupportPage() {
+  const locale = useLocale();
   const { settings, fetchSettings } = useSettingsStore();
 
   const { data: contactCms } = useQuery({
@@ -22,9 +24,21 @@ export default function SupportPage() {
   const supportPhone = contactCms?.supportPhone || settings?.supportPhone || '+91 7700054984';
   const whatsappPhone = contactCms?.whatsappNumber || contactCms?.whatsappPhone || supportPhone;
   const supportEmail = contactCms?.supportEmail || settings?.supportEmail || 'imagemazaprintwala@gmail.com';
-  const businessHours = contactCms?.workingHours || contactCms?.businessHours || 'Mon - Sat: 9:00 AM - 7:00 PM IST';
+  const rawAddressHi = [contactCms?.addressLine1_hi, contactCms?.addressLine2_hi, contactCms?.city_hi, contactCms?.state_hi, contactCms?.pincode].filter(Boolean).join(', ');
+  const rawAddressMr = [contactCms?.addressLine1_mr, contactCms?.addressLine2_mr, contactCms?.city_mr, contactCms?.state_mr, contactCms?.pincode].filter(Boolean).join(', ');
   const rawAddress = [contactCms?.addressLine1, contactCms?.addressLine2, contactCms?.city, contactCms?.state, contactCms?.pincode].filter(Boolean).join(', ');
-  const physicalAddress = contactCms?.physicalAddress || (rawAddress.length > 5 ? rawAddress : 'Commercial Printing Hub, Mumbai, India 400001');
+  const businessHours = (
+    locale === 'hi' ? contactCms?.workingHours_hi : locale === 'mr' ? contactCms?.workingHours_mr : null
+  ) || contactCms?.workingHours || contactCms?.businessHours || (
+    locale === 'hi' ? 'सोम - शनि: 9:00 पूर्वाह्न - 7:00 अपराह्न IST' : locale === 'mr' ? 'सोम - शनि: सकाळी 9:00 - संध्याकाळी 7:00 IST' : 'Mon - Sat: 9:00 AM - 7:00 PM IST'
+  );
+  const physicalAddress = (
+    locale === 'hi'
+      ? (contactCms?.physicalAddress_hi || (rawAddressHi.length > 5 ? rawAddressHi : null))
+      : locale === 'mr'
+      ? (contactCms?.physicalAddress_mr || (rawAddressMr.length > 5 ? rawAddressMr : null))
+      : null
+  ) || contactCms?.physicalAddress || (rawAddress.length > 5 ? rawAddress : 'Commercial Printing Hub, Mumbai, India 400001');
   const gstin = contactCms?.gstin;
 
   useEffect(() => {

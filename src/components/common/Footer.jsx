@@ -86,8 +86,16 @@ export default function Footer() {
 
   const storePhone = contactCms?.supportPhone || footerCms?.supportPhone || settingsData?.supportPhone || '+91 7700054984';
   const storeEmail = contactCms?.supportEmail || footerCms?.supportEmail || settingsData?.supportEmail || 'imagemazaprintwala@gmail.com';
+  const rawAddressHi = [contactCms?.addressLine1_hi, contactCms?.addressLine2_hi, contactCms?.city_hi, contactCms?.state_hi, contactCms?.pincode].filter(Boolean).join(', ');
+  const rawAddressMr = [contactCms?.addressLine1_mr, contactCms?.addressLine2_mr, contactCms?.city_mr, contactCms?.state_mr, contactCms?.pincode].filter(Boolean).join(', ');
   const rawAddress = [contactCms?.addressLine1, contactCms?.addressLine2, contactCms?.city, contactCms?.state, contactCms?.pincode].filter(Boolean).join(', ');
-  const storeAddress = contactCms?.physicalAddress || (rawAddress.length > 5 ? rawAddress : 'Commercial Printing Hub, Mumbai, India 400001');
+  const storeAddress = (
+    locale === 'hi'
+      ? (contactCms?.physicalAddress_hi || (rawAddressHi.length > 5 ? rawAddressHi : null))
+      : locale === 'mr'
+      ? (contactCms?.physicalAddress_mr || (rawAddressMr.length > 5 ? rawAddressMr : null))
+      : null
+  ) || contactCms?.physicalAddress || (rawAddress.length > 5 ? rawAddress : 'Commercial Printing Hub, Mumbai, India 400001');
 
   const [openSection, setOpenSection] = useState(null);
 
@@ -236,37 +244,43 @@ export default function Footer() {
           )}
 
           {/* Columns managed in the admin CMS (Footer Links & Policies) */}
-          {cmsColumns.map((col, ci) => (
-            <FooterAccordionItem
-              key={`cms-col-${ci}`}
-              title={col.title}
-              isOpen={openSection === `cms-col-${ci}`}
-              onToggle={() => toggleSection(`cms-col-${ci}`)}
-            >
-              <ul className="space-y-3 text-sm text-[var(--text-muted)] font-medium">
-                {(col.links || [])
-                  .filter((l) => l && l.label && l.href)
-                  .map((l, li) => (
-                    <li key={li}>
-                      {l.href.startsWith('http') ? (
-                        <a
-                          href={l.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-[#0082CA] transition-colors"
-                        >
-                          {l.label}
-                        </a>
-                      ) : (
-                        <Link href={l.href} className="hover:text-[#0082CA] transition-colors">
-                          {l.label}
-                        </Link>
-                      )}
-                    </li>
-                  ))}
-              </ul>
-            </FooterAccordionItem>
-          ))}
+          {cmsColumns.map((col, ci) => {
+            const colTitle = (locale === 'hi' ? col.title_hi : locale === 'mr' ? col.title_mr : null) || col.title;
+            return (
+              <FooterAccordionItem
+                key={`cms-col-${ci}`}
+                title={colTitle}
+                isOpen={openSection === `cms-col-${ci}`}
+                onToggle={() => toggleSection(`cms-col-${ci}`)}
+              >
+                <ul className="space-y-3 text-sm text-[var(--text-muted)] font-medium">
+                  {(col.links || [])
+                    .filter((l) => l && (l.label || l.label_hi || l.label_mr) && l.href)
+                    .map((l, li) => {
+                      const linkLabel = (locale === 'hi' ? l.label_hi : locale === 'mr' ? l.label_mr : null) || l.label;
+                      return (
+                        <li key={li}>
+                          {l.href.startsWith('http') ? (
+                            <a
+                              href={l.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:text-[#0082CA] transition-colors"
+                            >
+                              {linkLabel}
+                            </a>
+                          ) : (
+                            <Link href={l.href} className="hover:text-[#0082CA] transition-colors">
+                              {linkLabel}
+                            </Link>
+                          )}
+                        </li>
+                      );
+                    })}
+                </ul>
+              </FooterAccordionItem>
+            );
+          })}
 
           {/* Column 5: Company & Legal */}
           <div className="flex flex-col">
@@ -328,6 +342,7 @@ export default function Footer() {
                         netbanking: 'text-[var(--text-main)] font-semibold text-[10px]',
                         cod: 'text-emerald-600 dark:text-emerald-400 font-bold text-[10px]',
                       };
+                      const badgeLabel = (locale === 'hi' ? badge.label_hi : locale === 'mr' ? badge.label_mr : null) || badge.label;
                       return (
                         <div
                           key={badge.id}
@@ -335,7 +350,7 @@ export default function Footer() {
                             badgeStyles[badge.id] || 'text-[var(--text-main)] font-bold text-xs'
                           }`}
                         >
-                          {badge.label}
+                          {badgeLabel}
                         </div>
                       );
                     })}

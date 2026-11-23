@@ -92,6 +92,8 @@ export default function MegaMenu() {
                 const isHovered = activeCategory === cat.slug;
                 const isCurrentPage = pathname.startsWith(`/${cat.slug}`);
                 const isActive = isHovered || isCurrentPage;
+                const cmsLabel = (locale === 'hi' ? menuCmsData?.labels?.[cat.slug]?.hi : locale === 'mr' ? menuCmsData?.labels?.[cat.slug]?.mr : null) || menuCmsData?.labels?.[cat.slug]?.en;
+                const displayName = cmsLabel || (t.has(`categories.${cat.slug}`) ? t(`categories.${cat.slug}`) : cat.name);
                 return (
                   <div
                     key={cat.slug}
@@ -108,11 +110,34 @@ export default function MegaMenu() {
                           : 'text-[var(--text-muted)] hover:text-[var(--text-main)] border-b-[3px] border-transparent'
                       }`}
                     >
-                      <span className="whitespace-nowrap">{t.has(`categories.${cat.slug}`) ? t(`categories.${cat.slug}`) : cat.name}</span>
+                      <span className="whitespace-nowrap">{displayName}</span>
                     </Link>
                   </div>
                 );
               })}
+
+              {Array.isArray(menuCmsData?.customLinks) && menuCmsData.customLinks
+                .filter((l) => l && l.enabled !== false && (l.label || l.label_hi || l.label_mr) && l.href)
+                .map((link, li) => {
+                  const label = (locale === 'hi' ? link.label_hi : locale === 'mr' ? link.label_mr : null) || link.label;
+                  const badge = (locale === 'hi' ? link.badge_hi : locale === 'mr' ? link.badge_mr : null) || link.badge;
+                  return (
+                    <div key={`custom-nav-${li}`} className="h-full flex items-center shrink-0">
+                      <Link
+                        href={link.href}
+                        onClick={() => setActiveCategory(null)}
+                        className="flex items-center gap-1.5 h-full px-2 text-[var(--text-muted)] hover:text-[#0082CA] transition-colors border-b-[3px] border-transparent font-semibold"
+                      >
+                        <span className="whitespace-nowrap">{label}</span>
+                        {badge && (
+                          <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase bg-[#EB001B] text-white tracking-wider">
+                            {badge}
+                          </span>
+                        )}
+                      </Link>
+                    </div>
+                  );
+                })}
             </>
           )}
         </div>

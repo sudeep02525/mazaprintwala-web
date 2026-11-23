@@ -854,7 +854,9 @@ export default function Header() {
               </div>
               <div>
                 <p className="text-xs font-bold text-[var(--text-main)]">{contactCms?.supportPhone || '+91 7700054984'}</p>
-                <p className="text-[11px] text-[var(--text-muted)] font-medium">{contactCms?.workingHours || contactCms?.businessHours || 'Mon-Sat 10am-7pm'}</p>
+                <p className="text-[11px] text-[var(--text-muted)] font-medium">
+                  {(locale === 'hi' ? contactCms?.workingHours_hi : locale === 'mr' ? contactCms?.workingHours_mr : null) || contactCms?.workingHours || contactCms?.businessHours || 'Mon-Sat 10am-7pm'}
+                </p>
               </div>
             </Link>
           </div>

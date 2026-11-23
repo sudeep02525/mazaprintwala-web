@@ -4,7 +4,7 @@ import { getImageUrl } from '@/utils/getImageUrl.js';
 import React from 'react';
 import { Link } from '@/i18n/routing.js';
 import { motion } from 'framer-motion';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 const SectionHeader = ({ title, linkText }) => (
   <div className="flex justify-between items-end mb-8">
@@ -15,6 +15,7 @@ const SectionHeader = ({ title, linkText }) => (
 
 export default function VisualCategories({ cmsCategoryTiles }) {
   const t = useTranslations();
+  const locale = useLocale();
 
   const blocks = (cmsCategoryTiles?.blocks && cmsCategoryTiles.blocks.length > 0)
     ? cmsCategoryTiles.blocks
@@ -45,31 +46,35 @@ export default function VisualCategories({ cmsCategoryTiles }) {
         {blocks.map((block, bi) => {
           const activeTiles = (block.tiles || []).filter((t) => t && t.isActive !== false);
           if (activeTiles.length === 0) return null;
+          const blockTitle = (locale === 'hi' ? block.title_hi : locale === 'mr' ? block.title_mr : null) || block.title;
           return (
             <div key={`block-${bi}`}>
-              <SectionHeader title={block.title} linkText="" />
+              <SectionHeader title={blockTitle} linkText="" />
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-8">
-                {activeTiles.map((item, i) => (
-                  <motion.div 
-                    key={`tile-${bi}-${i}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: i * 0.1 }}
-                  >
-                    <Link href={item.link || '/products'} className="group flex flex-col gap-3">
-                      <div className="aspect-square bg-[var(--hover)] rounded-lg overflow-hidden shadow-sm border border-[var(--border)] relative">
-                        <img
-                          src={getImageUrl(item.img)}
-                          loading="lazy"
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                          alt={item.name}
-                        />
-                      </div>
-                      <h3 className="font-bold text-[var(--text-main)] text-sm">{item.name}</h3>
-                    </Link>
-                  </motion.div>
-                ))}
+                {activeTiles.map((item, i) => {
+                  const itemName = (locale === 'hi' ? item.name_hi : locale === 'mr' ? item.name_mr : null) || item.name;
+                  return (
+                    <motion.div 
+                      key={`tile-${bi}-${i}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: i * 0.1 }}
+                    >
+                      <Link href={item.link || '/products'} className="group flex flex-col gap-3">
+                        <div className="aspect-square bg-[var(--hover)] rounded-lg overflow-hidden shadow-sm border border-[var(--border)] relative">
+                          <img
+                            src={getImageUrl(item.img)}
+                            loading="lazy"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            alt={itemName}
+                          />
+                        </div>
+                        <h3 className="font-bold text-[var(--text-main)] text-sm">{itemName}</h3>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           );

@@ -88,6 +88,12 @@ export default async function HomePage({ params }) {
     return baseProducts.slice(start, start + length);
   };
 
+  const getHeading = (field) => {
+    if (!cmsHeadings) return null;
+    const localized = locale === 'hi' ? cmsHeadings[`${field}_hi`] : locale === 'mr' ? cmsHeadings[`${field}_mr`] : null;
+    return localized?.trim() || cmsHeadings[field]?.trim() || null;
+  };
+
   const bestSellers = getSlice(0, 8);
   const newArrivals = getSlice(8, 8);
   const businessEssentials = getSlice(16, 6);
@@ -118,8 +124,8 @@ export default async function HomePage({ params }) {
       <section className="py-14 bg-[var(--bg-page)]">
         <FadeIn className="w-full max-w-[1550px] mx-auto px-4 md:px-8">
           <SectionHeader
-            title={cmsHeadings?.bestSellersTitle || tHome('bestSellers')}
-            subtitle={cmsHeadings?.bestSellersSubtitle}
+            title={getHeading('bestSellersTitle') || tHome('bestSellers')}
+            subtitle={getHeading('bestSellersSubtitle')}
             tButtons={tButtons}
           />
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
@@ -128,7 +134,7 @@ export default async function HomePage({ params }) {
         </FadeIn>
       </section>
 
-      <CorporateSection products={businessEssentials} />
+      <CorporateSection products={businessEssentials} title={getHeading('corporateTitle')} subtitle={getHeading('corporateSubtitle')} />
       <WeddingSection />
       <CustomMerchSection />
       
@@ -136,8 +142,8 @@ export default async function HomePage({ params }) {
       <section className="py-14 bg-[var(--bg-page)]">
         <FadeIn className="w-full max-w-[1550px] mx-auto px-4 md:px-8">
           <SectionHeader
-            title={cmsHeadings?.newArrivalsTitle || tHome('newArrivals')}
-            subtitle={cmsHeadings?.newArrivalsSubtitle || (locale === 'hi' ? 'नए टेम्प्लेट और उत्पाद' : locale === 'mr' ? 'नवीन टेम्पलेट्स आणि उत्पादने' : 'Fresh new templates and products')}
+            title={getHeading('newArrivalsTitle') || tHome('newArrivals')}
+            subtitle={getHeading('newArrivalsSubtitle') || (locale === 'hi' ? 'नए टेम्प्लेट और उत्पाद' : locale === 'mr' ? 'नवीन टेम्पलेट्स आणि उत्पादने' : 'Fresh new templates and products')}
             tButtons={tButtons}
           />
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
@@ -146,13 +152,13 @@ export default async function HomePage({ params }) {
         </FadeIn>
       </section>
 
-      <TopRatedSection products={trendingProducts} />
+      <TopRatedSection products={trendingProducts} title={getHeading('trendingTitle')} subtitle={getHeading('trendingSubtitle')} />
 
       {/* 17. POPULAR SEARCHES (SEO) */}
       <section className="py-10 bg-[var(--bg-subtle)]">
         <FadeIn className="w-full max-w-[1550px] mx-auto px-4 md:px-8">
           <SectionHeader
-            title={cmsHeadings?.popularSearchesTitle || tHome('popularSearches')}
+            title={getHeading('popularSearchesTitle') || tHome('popularSearches')}
             linkText={null}
             tButtons={tButtons}
           />

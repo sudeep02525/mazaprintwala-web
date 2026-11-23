@@ -50,10 +50,11 @@ export const FeaturedSlider = ({ products = [] }) => {
 };
 
 // 2. CORPORATE PRINTING (Asymmetrical Layout)
-export const CorporateSection = ({ products = [] }) => {
+export const CorporateSection = ({ products = [], title: customTitle, subtitle: customSub }) => {
   const tHome = useTranslations('homeSections');
   const locale = useLocale();
-  const sub = locale === 'hi' ? 'प्रीमियम क्वालिटी के साथ अपने ब्रांड को बढ़ाएं' : locale === 'mr' ? 'प्रीमियम गुणवत्तेसह आपला ब्रँड वाढवा' : 'Elevate your brand with premium quality';
+  const sub = customSub || (locale === 'hi' ? 'प्रीमियम क्वालिटी के साथ अपने ब्रांड को बढ़ाएं' : locale === 'mr' ? 'प्रीमियम गुणवत्तेसह आपला ब्रँड वाढवा' : 'Elevate your brand with premium quality');
+  const headerTitle = customTitle || tHome('corporateGifting');
   const title = locale === 'hi' ? 'प्रीमियम कॉर्पोरेट वेलकम किट' : locale === 'mr' ? 'प्रीमियम कॉर्पोरेट वेलकम किट' : 'Premium Corporate Welcome Kits';
   const desc = locale === 'hi' ? 'नोटबुक, मेटैलिक पेन, और आईडी कार्ड आपके नए कर्मचारियों के लिए एकदम सही हैं।' : locale === 'mr' ? 'तुमच्या नवीन कर्मचाऱ्यांसाठी नोटबुक, मेटॅलिक पेन आणि आयडी कार्ड अगदी योग्य आहेत.' : 'Notebooks, metallic pens, and ID cards bundled perfectly for your new employees.';
   const btn = locale === 'hi' ? 'किट्स एक्सप्लोर करें' : locale === 'mr' ? 'किट्स एक्सप्लोर करा' : 'Explore Kits';
@@ -61,7 +62,7 @@ export const CorporateSection = ({ products = [] }) => {
   return (
     <section className="py-16 bg-[var(--bg-subtle)]">
       <div className="w-full max-w-[1550px] mx-auto px-4 md:px-8">
-        <SectionHeader title={tHome('corporateGifting')} subtitle={sub} />
+        <SectionHeader title={headerTitle} subtitle={sub} />
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Large Hero Banner */}
@@ -185,17 +186,18 @@ export const CustomMerchSection = () => {
 };
 
 // 5. TOP RATED PRODUCTS (Consistent standard ProductCard grid)
-export const TopRatedSection = ({ products = [] }) => {
+export const TopRatedSection = ({ products = [], title: customTitle, subtitle: customSub }) => {
   const tHome = useTranslations('homeSections');
   const locale = useLocale();
-  const sub = locale === 'hi' ? 'हज़ारों व्यवसायों द्वारा पसंद किया गया' : locale === 'mr' ? 'हजारो व्यवसायांना आवडलेले' : 'Loved by thousands of businesses';
+  const sub = customSub || (locale === 'hi' ? 'हज़ारों व्यवसायों द्वारा पसंद किया गया' : locale === 'mr' ? 'हजारो व्यवसायांना आवडलेले' : 'Loved by thousands of businesses');
+  const headerTitle = customTitle || tHome('topRated');
 
   if (!products?.length) return null;
 
   return (
     <section className="py-14 bg-[var(--bg-subtle)] border-t border-[var(--border)]">
       <div className="w-full max-w-[1550px] mx-auto px-4 md:px-8">
-        <SectionHeader title={tHome('topRated')} subtitle={sub} />
+        <SectionHeader title={headerTitle} subtitle={sub} />
         
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
           {products.slice(0, 8).map((p, i) => (

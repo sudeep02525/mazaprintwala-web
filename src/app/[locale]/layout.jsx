@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing.js';
 import { cookies } from 'next/headers';
 import Script from 'next/script';
+import { serverApi } from '@/lib/server-api.js';
 
 export async function generateMetadata({ params }) {
   const { locale } = await params;
@@ -15,14 +16,38 @@ export async function generateMetadata({ params }) {
   
   try {
     const t = await getTranslations({ locale, namespace: 'metadata' });
-    const title = t('title');
-    const description = t('description');
+    const fallbackTitle = t('title');
+    const fallbackDescription = t('description');
+
+    const metaRes = await serverApi.get('/cms/key/page_meta', 60).catch(() => null);
+    const homeMeta = metaRes?.data?.content?.content?.home || {};
+
+    const title = (
+      (locale === 'hi' ? homeMeta.title_hi : locale === 'mr' ? homeMeta.title_mr : null) ||
+      homeMeta.title ||
+      fallbackTitle
+    );
+
+    const description = (
+      (locale === 'hi' ? homeMeta.description_hi : locale === 'mr' ? homeMeta.description_mr : null) ||
+      homeMeta.description ||
+      fallbackDescription
+    );
+
+    const keywords = (
+      (locale === 'hi' ? homeMeta.keywords_hi : locale === 'mr' ? homeMeta.keywords_mr : null) ||
+      homeMeta.keywords ||
+      undefined
+    );
+
+    const ogImage = homeMeta.ogImage || undefined;
 
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://mazaprintwala.com';
     return {
       metadataBase: new URL(baseUrl),
       title: title,
       description: description,
+      keywords: keywords ? keywords.split(',').map((s) => s.trim()) : undefined,
       openGraph: {
         title: title,
         description: description,
@@ -30,11 +55,13 @@ export async function generateMetadata({ params }) {
         siteName: 'Maza Printwala',
         locale: locale,
         type: 'website',
+        images: ogImage ? [{ url: ogImage }] : [],
       },
       twitter: {
         card: 'summary_large_image',
         title: title,
         description: description,
+        images: ogImage ? [ogImage] : [],
       },
       alternates: {
         canonical: `${baseUrl}/${locale}`,
