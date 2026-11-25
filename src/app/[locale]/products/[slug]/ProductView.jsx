@@ -426,44 +426,78 @@ export function ProductDetailContent({ slug, fallbackCategorySlug, fallbackCateg
             {/* Delivery Speed */}
             <div className="space-y-1">
               <label className="text-[15px] font-bold text-[var(--text-main)] block">Delivery Speed</label>
-              <div className="flex gap-2">
-                <button 
-                  type="button"
-                  onClick={() => {
-                    setDeliverySpeed('standard');
-                    updateConfiguration('deliverySpeed', 'standard');
-                  }}
-                  className={`flex-1 py-3 px-4 border rounded-md text-[13px] font-bold transition-colors cursor-pointer text-left sm:text-center ${
-                    deliverySpeed === 'standard' 
-                      ? 'bg-[#0082CA]/15 border-[#0082CA] text-[var(--text-main)]' 
-                      : 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-main)] hover:bg-[var(--bg-subtle)]'
-                  }`}
-                >
-                  <div>Standard {standardMethod ? `(${standardMethod.estimatedDaysMin}-${standardMethod.estimatedDaysMax} Days)` : '(3-5 Days)'}</div>
-                  <div className="text-[11px] font-semibold text-[var(--text-muted)] mt-0.5">
-                    {standardMethod ? (orderTotal >= (standardMethod.freeDeliveryThreshold || Infinity) ? 'FREE' : `₹${standardMethod.charge}`) : 'FREE'}
-                  </div>
-                </button>
-                <button 
-                  type="button"
-                  disabled={!expeditedMethod}
-                  onClick={() => {
-                    const speedVal = sameDayMethod ? 'sameday' : 'express';
-                    setDeliverySpeed(speedVal);
-                    updateConfiguration('deliverySpeed', speedVal);
-                  }}
-                  className={`flex-1 py-3 px-4 border rounded-md text-[13px] font-bold transition-colors cursor-pointer text-left sm:text-center disabled:opacity-50 disabled:cursor-not-allowed ${
-                    deliverySpeed === 'sameday' || deliverySpeed === 'express' 
-                      ? 'bg-[#0082CA]/15 border-[#0082CA] text-[var(--text-main)]' 
-                      : 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-main)] hover:bg-[var(--bg-subtle)]'
-                  }`}
-                >
-                  <div>{sameDayMethod ? 'Same Day (1 Day)' : expressMethod ? 'Express (2-3 Days)' : 'Express / Same Day'}</div>
-                  <div className="text-[11px] font-semibold text-[var(--text-muted)] mt-0.5">
-                    {expeditedMethod ? `₹${expeditedMethod.charge}` : 'Not available for this PIN'}
-                  </div>
-                </button>
-              </div>
+              {deliveryMethods.length === 0 ? (
+                <div className="rounded-md border border-dashed border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-3">
+                  <p className="text-[13px] font-bold text-[var(--text-main)]">
+                    {deliveryLoading
+                      ? 'Checking delivery for this PIN code...'
+                      : 'Delivery estimate not available for this PIN code'}
+                  </p>
+                  <p className="text-[11px] font-semibold text-[var(--text-muted)] mt-0.5">
+                    {deliveryLoading
+                      ? 'Please wait a moment.'
+                      : 'Try another PIN code, or contact support and we will confirm the timeline.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={!standardMethod}
+                    onClick={() => {
+                      setDeliverySpeed('standard');
+                      updateConfiguration('deliverySpeed', 'standard');
+                    }}
+                    className={`flex-1 py-3 px-4 border rounded-md text-[13px] font-bold transition-colors cursor-pointer text-left sm:text-center disabled:opacity-50 disabled:cursor-not-allowed ${
+                      deliverySpeed === 'standard'
+                        ? 'bg-[#0082CA]/15 border-[#0082CA] text-[var(--text-main)]'
+                        : 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-main)] hover:bg-[var(--bg-subtle)]'
+                    }`}
+                  >
+                    <div>
+                      {standardMethod
+                        ? `Standard (${standardMethod.estimatedDaysMin}-${standardMethod.estimatedDaysMax} Days)`
+                        : 'Standard not available'}
+                    </div>
+                    <div className="text-[11px] font-semibold text-[var(--text-muted)] mt-0.5">
+                      {standardMethod
+                        ? (orderTotal >= (standardMethod.freeDeliveryThreshold || Infinity)
+                            ? 'FREE'
+                            : `\u20b9${standardMethod.charge}`)
+                        : '\u2014'}
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!expeditedMethod}
+                    onClick={() => {
+                      const speedVal = sameDayMethod ? 'sameday' : 'express';
+                      setDeliverySpeed(speedVal);
+                      updateConfiguration('deliverySpeed', speedVal);
+                    }}
+                    className={`flex-1 py-3 px-4 border rounded-md text-[13px] font-bold transition-colors cursor-pointer text-left sm:text-center disabled:opacity-50 disabled:cursor-not-allowed ${
+                      deliverySpeed === 'sameday' || deliverySpeed === 'express'
+                        ? 'bg-[#0082CA]/15 border-[#0082CA] text-[var(--text-main)]'
+                        : 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-main)] hover:bg-[var(--bg-subtle)]'
+                    }`}
+                  >
+                    <div>
+                      {sameDayMethod
+                        ? 'Same Day (1 Day)'
+                        : expressMethod
+                          ? `Express (${expressMethod.estimatedDaysMin}-${expressMethod.estimatedDaysMax} Days)`
+                          : 'Express / Same Day'}
+                    </div>
+                    <div className="text-[11px] font-semibold text-[var(--text-muted)] mt-0.5">
+                      {expeditedMethod
+                        ? (orderTotal >= (expeditedMethod.freeDeliveryThreshold || Infinity)
+                            ? 'FREE'
+                            : `\u20b9${expeditedMethod.charge}`)
+                        : 'Not available for this PIN'}
+                    </div>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Corners */}
