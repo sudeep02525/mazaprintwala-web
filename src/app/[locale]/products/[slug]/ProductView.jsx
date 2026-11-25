@@ -28,9 +28,37 @@ export function ProductDetailContent({ slug, fallbackCategorySlug, fallbackCateg
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [deliverySpeed, setDeliverySpeed] = useState('standard');
-  const [pincode, setPincode] = useState('110001');
+  // The shop is in Kurla (400043) and ships all over India. Default the widget to the
+  // store's own PIN, then replace it with whatever the visitor checked last.
+  const STORE_PINCODE = '400043';
+  const PINCODE_STORAGE_KEY = 'maaza_pincode';
+
+  const [pincode, setPincode] = useState(STORE_PINCODE);
   const [isEditingPincode, setIsEditingPincode] = useState(false);
-  const [pincodeInput, setPincodeInput] = useState('110001');
+  const [pincodeInput, setPincodeInput] = useState(STORE_PINCODE);
+
+  // Restore the last checked PIN after mount (not during render, to avoid a hydration mismatch)
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(PINCODE_STORAGE_KEY);
+      if (saved && /^[1-9][0-9]{5}$/.test(saved)) {
+        setPincode(saved);
+        setPincodeInput(saved);
+      }
+    } catch (e) {
+      /* private mode - keep the default */
+    }
+  }, []);
+
+  const savePincode = (value) => {
+    setPincode(value);
+    setPincodeInput(value);
+    try {
+      window.localStorage.setItem(PINCODE_STORAGE_KEY, value);
+    } catch (e) {
+      /* ignore */
+    }
+  };
   const [openSection, setOpenSection] = useState('specs');
 
   // Query Delivery Rules from API for the entered PIN code
@@ -76,7 +104,8 @@ export function ProductDetailContent({ slug, fallbackCategorySlug, fallbackCateg
 
   const getDeliveryDateText = (method) => {
     if (!method) {
-      return getEstimatedDate(deliverySpeed === 'sameday' ? 1 : 4);
+      // Never invent a date. Without a matching rule we do not know the timeline.
+      return null;
     }
     if (method.deliveryMethod === 'SAME_DAY') {
       return 'Tomorrow';
@@ -391,7 +420,7 @@ export function ProductDetailContent({ slug, fallbackCategorySlug, fallbackCateg
                   <button
                     type="button"
                     onClick={() => {
-                      if (pincodeInput.length === 6) setPincode(pincodeInput);
+                      if (pincodeInput.length === 6) savePincode(pincodeInput);
                       setIsEditingPincode(false);
                     }}
                     className="text-xs font-bold text-[#0082CA] hover:underline"
@@ -411,12 +440,21 @@ export function ProductDetailContent({ slug, fallbackCategorySlug, fallbackCateg
             </div>
             <div className="flex items-center gap-2 font-bold text-[var(--text-main)] text-sm">
               <Truck className="w-4 h-4 text-[#0082CA]" />
-              <span>
-                Deliver by <strong className="text-[var(--text-main)]">{getDeliveryDateText(activeDeliveryMethod)}</strong>{' '}
-                <span className={`text-[11px] ml-1 px-2 py-0.5 rounded-full font-bold ${isFreeDelivery ? 'text-emerald-700 bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300' : 'text-[var(--text-main)] bg-[var(--hover)]'}`}>
-                  {deliveryChargeText}
+              {getDeliveryDateText(activeDeliveryMethod) ? (
+                <span>
+                  Deliver by{' '}
+                  <strong className="text-[var(--text-main)]">{getDeliveryDateText(activeDeliveryMethod)}</strong>{' '}
+                  <span className={`text-[11px] ml-1 px-2 py-0.5 rounded-full font-bold ${isFreeDelivery ? 'text-emerald-700 bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300' : 'text-[var(--text-main)] bg-[var(--hover)]'}`}>
+                    {deliveryChargeText}
+                  </span>
                 </span>
-              </span>
+              ) : (
+                <span className="font-semibold text-[var(--text-muted)]">
+                  {deliveryLoading
+                    ? 'Checking delivery for this PIN...'
+                    : 'We deliver all over India - pick a delivery speed below'}
+                </span>
+              )}
             </div>
           </div>
 
