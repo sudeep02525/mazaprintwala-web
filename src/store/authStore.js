@@ -7,10 +7,10 @@ export const useAuthStore = create((set) => ({
   isLoading: true,
   error: null,
 
-  login: async (email, password) => {
+  login: async (email, password, rememberMe = false) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await axiosInstance.post('/auth/login', { email, password });
+      const res = await axiosInstance.post('/auth/login', { email, password, rememberMe });
       if (typeof window !== 'undefined') {
         try { localStorage.setItem('has_session', '1'); } catch (e) {}
       }

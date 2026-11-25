@@ -17,7 +17,13 @@ export default function LoginPage() {
   const { login, isLoading, error: storeError, isAuthenticated } = useAuthStore();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextUrl = searchParams.get('next') || '/orders';
+  // Where to go after signing in. A ?next= value is only honoured when it is a
+  // relative in-app path, so the parameter cannot be used as an open redirect.
+  const rawNext = searchParams.get('next') || '/account';
+  const nextUrl =
+    rawNext.startsWith('/') && !rawNext.startsWith('//') && !rawNext.includes('://')
+      ? rawNext
+      : '/account';
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -62,7 +68,7 @@ export default function LoginPage() {
     }
 
     try {
-      await login(email.trim(), password);
+      await login(email.trim(), password, rememberMe);
       router.push(nextUrl);
     } catch (err) {
       setSubmitError(err.message || 'Incorrect email or password. Please try again.');

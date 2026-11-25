@@ -24,6 +24,8 @@ import {
   Moon,
   Monitor,
   Check,
+  Truck,
+  HelpCircle,
 } from "lucide-react";
 import { useCartStore } from '@/store/cartStore.js';
 import { useAuthStore } from '@/store/authStore.js';
@@ -146,9 +148,20 @@ export default function Header() {
   const [isMounted, setIsMounted] = useState(false);
   const { theme, isDark, setTheme } = useTheme();
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef(null);
   const themeDropdownRef = useRef(null);
   const { items, fetchCart } = useCartStore();
   const { user, isAuthenticated, logout } = useAuthStore();
+
+  // "Sudeep Das" -> "SD", so the header can show an avatar instead of a name block
+  const initials = (user?.name || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join('') || 'U';
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -165,6 +178,21 @@ export default function Header() {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [fetchCart]);
+
+  // Close the account menu on outside click or Escape
+  useEffect(() => {
+    if (!isProfileOpen) return;
+    const onClick = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) setIsProfileOpen(false);
+    };
+    const onKey = (e) => { if (e.key === 'Escape') setIsProfileOpen(false); };
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [isProfileOpen]);
 
   // Close theme dropdown on outside click or Escape key
   useEffect(() => {
@@ -508,34 +536,53 @@ export default function Header() {
             {!isMounted ? (
               <div className="w-9 sm:w-[90px] h-9 rounded animate-pulse bg-[var(--hover)]" />
             ) : isAuthenticated ? (
-              <div className="flex items-center gap-2 sm:gap-2.5">
-                <Link
-                  href="/account"
-                  className="flex flex-col items-end hidden sm:flex w-[110px] group text-right"
-                  title="My Account & Addresses"
-                >
-                  <span className="text-xs font-bold text-[var(--text-main)] group-hover:text-[#0082CA] transition-colors truncate w-full text-right">
-                    {user?.name}
-                  </span>
-                  <span className="text-[10px] text-[var(--text-muted)] font-medium truncate w-full text-right">
-                    {user?.email || "My Account"}
-                  </span>
-                </Link>
-                <Link
-                  href="/account"
-                  className="sm:hidden flex items-center justify-center w-9 h-9 rounded-full hover:bg-[var(--hover)] text-[var(--text-main)] hover:text-[#0082CA] transition-colors"
-                  aria-label="My Account"
-                  title="My Account"
-                >
-                  <User className="w-5 h-5" />
-                </Link>
+              <div className="relative" ref={profileRef}>
                 <button
-                  onClick={logout}
-                  className="hidden sm:flex items-center justify-center w-10 h-10 shrink-0 rounded-full hover:bg-[var(--border)] text-[var(--text-main)] hover:text-red-600 transition-colors cursor-pointer"
-                  aria-label="Logout"
+                  type="button"
+                  onClick={() => setIsProfileOpen((v) => !v)}
+                  aria-haspopup="menu"
+                  aria-expanded={isProfileOpen}
+                  aria-label="My account"
+                  className="flex items-center gap-2 rounded-full pl-1 pr-2 py-1 hover:bg-[var(--hover)] transition-colors cursor-pointer"
                 >
-                  <LogOut className="w-5 h-5" />
+                  <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#0082CA] text-white text-sm font-bold shrink-0">
+                    {initials}
+                  </span>
+                  <span className="hidden sm:block text-xs font-bold text-[var(--text-main)] max-w-[90px] truncate">
+                    {(user?.name || '').split(' ')[0] || 'Account'}
+                  </span>
+                  <ChevronDown className={`hidden sm:block w-4 h-4 text-[var(--text-muted)] transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
                 </button>
+
+                {isProfileOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 mt-2 w-56 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] shadow-xl py-2 z-50"
+                  >
+                    <div className="px-4 pb-3 mb-2 border-b border-[var(--border)]">
+                      <p className="text-sm font-bold text-[var(--text-main)] truncate">{user?.name || 'My Account'}</p>
+                      <p className="text-[11px] text-[var(--text-muted)] truncate">{user?.email}</p>
+                    </div>
+                    <Link href="/account" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--hover)]">
+                      <User className="w-4 h-4 text-[var(--text-muted)]" /> My Account
+                    </Link>
+                    <Link href="/orders" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--hover)]">
+                      <Package className="w-4 h-4 text-[var(--text-muted)]" /> My Orders
+                    </Link>
+                    <Link href="/track-order" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--hover)]">
+                      <Truck className="w-4 h-4 text-[var(--text-muted)]" /> Track an Order
+                    </Link>
+                    <Link href="/support" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-[var(--text-main)] hover:bg-[var(--hover)]">
+                      <HelpCircle className="w-4 h-4 text-[var(--text-muted)]" /> Help & Support
+                    </Link>
+                    <button
+                      onClick={() => { setIsProfileOpen(false); logout(); }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 mt-1 border-t border-[var(--border)] cursor-pointer"
+                    >
+                      <LogOut className="w-4 h-4" /> Sign out
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <Link
